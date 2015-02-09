@@ -88,6 +88,7 @@ class EventProcessor {
       $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout);
 
       if ($errno != 0) {
+        error_log("LaunchDarkly error opening socket $errno");
         $this->_socket_failed = true;
         return false;
       }
@@ -138,7 +139,12 @@ class EventProcessor {
       if ($retry) {
         error_log("LaunchDarkly retrying send");
         $socket = $this->createSocket();
-        if ($socket) return $this->makeRequest($socket, $req, false);
+        if ($socket) {
+          return $this->makeRequest($socket, $req, false);
+        } else {
+          error_log("LaunchDarkly unable to open socket");
+          return false;
+        }
       }
       return false;
     }
