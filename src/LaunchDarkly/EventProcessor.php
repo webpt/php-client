@@ -72,6 +72,7 @@ class EventProcessor {
     $payload = json_encode($this->_queue);
 
     $body = $this->createBody($payload);
+    error_log("LaunchDarkly sending events: " . $body);
 
     return $this->makeRequest($socket, $body);
   }
