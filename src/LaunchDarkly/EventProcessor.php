@@ -85,9 +85,13 @@ class EventProcessor {
   
     try {
 
-      $context = stream_context_create();
-      $result = stream_context_set_option($context, 'ssl', 'verify_peer', false); 
-      $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout, $context);
+      $contextOptions = array(
+          'ssl' => array(
+              'verify_peer' => false,
+          )
+      );
+
+      $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout, $contextOptions);
 
       if ($errno != 0) {
         error_log("LaunchDarkly error opening socket $errno");
