@@ -72,7 +72,6 @@ class EventProcessor {
     $payload = json_encode($this->_queue);
 
     $body = $this->createBody($payload);
-    error_log("LaunchDarkly sending events: " . $body);
 
     return $this->makeRequest($socket, $body);
   }
@@ -120,6 +119,7 @@ class EventProcessor {
     $bytes_written = 0;
     $bytes_total = strlen($req);
     $closed = false;
+    error_log("[DEBUG] LaunchDarkly sending events: " . $body);
 
     while (!$closed && $bytes_written < $bytes_total) {
       try {
@@ -146,8 +146,12 @@ class EventProcessor {
           error_log("LaunchDarkly unable to open socket");
           return false;
         }
+      } else {
+        error_log("[DEBUG] LaunchDarkly socket closed but we aren't going to retry");
       }
       return false;
+    } else {
+      error_log("[DEBUG] LaunchDarkly sent events");
     }
 
     return true;
