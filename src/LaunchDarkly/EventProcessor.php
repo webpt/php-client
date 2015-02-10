@@ -119,7 +119,7 @@ class EventProcessor {
     $bytes_written = 0;
     $bytes_total = strlen($req);
     $closed = false;
-    error_log("[DEBUG] LaunchDarkly sending events: " . $body);
+    error_log("[DEBUG] LaunchDarkly sending events: " . $req);
 
     while (!$closed && $bytes_written < $bytes_total) {
       try {
