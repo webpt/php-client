@@ -69,11 +69,16 @@ class EventProcessor {
       error_log("LaunchDarkly unable to open socket");
       return;
     }
-    $payload = json_encode($this->_queue);
+    try {
 
-    $body = $this->createBody($payload);
+      $payload = json_encode($this->_queue);
 
-    return $this->makeRequest($socket, $body);
+      $body = $this->createBody($payload);
+
+      return $this->makeRequest($socket, $body);
+    } finally {
+      socket_close($socket);
+    }
   }
 
   private function createSocket() {
@@ -85,7 +90,7 @@ class EventProcessor {
   
     try {
 
-      $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout);
+      $socket = @fsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout);
       $status = stream_get_meta_data($socket);
       error_log(print_r($status, true));
       error_log("feof: " . feof($socket));
