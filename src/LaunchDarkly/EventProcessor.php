@@ -88,7 +88,7 @@ class EventProcessor {
       $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout);
       $status = stream_get_meta_data($socket);
       error_log(print_r($status, true));
-      error_log("feof: " . feof($socket);)
+      error_log("feof: " . feof($socket));
 
 
       if ($errno != 0) {
