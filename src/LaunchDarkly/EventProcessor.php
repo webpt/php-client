@@ -41,14 +41,20 @@ class EventProcessor {
     $this->_timeout = $options['timeout'];
 
     $this->_queue = array(); 
+    $this->_pending = array(); 
   }
 
   public function __destruct() {
     $this->flush();
+    error_log("forcing " . count($this->_pending) . " futures");
+    foreach ($this->_pending as $req) {
+      $req->wait();
+    }
   }
 
   public function sendEvent($event) {
-    return $this->enqueue($event) && $this->flush();
+    $this->enqueue($event);
+    return true;
   }
 
   public function enqueue($event) {
@@ -57,6 +63,8 @@ class EventProcessor {
     }
 
     array_push($this->_queue, $event);
+    $newReq = $this->flush();
+    array_push($this->_pending, $newReq);
 
     return true;
   }
@@ -72,9 +80,7 @@ class EventProcessor {
   }
 
   private function makeRequest($payload) {
-
-    $this->_httpClient->post("/api/events/bulk", ['body' => $payload, 'future' => true]);
-    return true;
+    return $this->_httpClient->post("/api/events/bulk", ['body' => $payload, 'future' => true]);
   }
 
 
