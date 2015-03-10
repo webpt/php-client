@@ -46,9 +46,9 @@ class LDClient {
             $options['capacity'] = 1000;
         }
 
-        $this->_eventProcessor = new \LaunchDarkly\EventProcessor($apiKey, $options);
-
         $this->_client = $this->_make_client($options);
+
+        $this->_eventProcessor = new \LaunchDarkly\EventProcessor($apiKey, $this->_client, $options);
     }
 
     public function getFlag($key, $user, $default = false) {

@@ -1,6 +1,8 @@
 <?php
 namespace LaunchDarkly;
 
+use GuzzleHttp\Client;
+
 /**
  * @internal
  */
@@ -15,8 +17,9 @@ class EventProcessor {
   private $_port;
   private $_ssl;
 
-  public function __construct($apiKey, $options = []) {
+  public function __construct($apiKey, $httpClient, $options = []) {
     $this->_apiKey = $apiKey;
+    $this->_httpClient = $httpClient;
     if (!isset($options['base_uri'])) {
         $this->_host = 'app.launchdarkly.com';
         $this->_port = 443;
@@ -63,41 +66,9 @@ class EventProcessor {
       return;
     }
 
-    $socket = $this->createSocket();
-    
-    if (!$socket) {
-      error_log("LaunchDarkly unable to open socket");
-      return;
-    }
     $payload = json_encode($this->_queue);
 
-    $body = $this->createBody($payload);
-
     return $this->makeRequest($socket, $body);
-  }
-
-  private function createSocket() {
-    if ($this->_socket_failed) {
-      return false;
-    }
-
-    $protocol = $this->_ssl ? "ssl" : "tcp";
-  
-    try {
-
-      $socket = @pfsockopen($protocol . "://" . $this->_host, $this->_port, $errno, $errstr, $this->_timeout);
-
-      if ($errno != 0) {
-        $this->_socket_failed = true;
-        return false;
-      }
-
-      return $socket;
-    } catch (Exception $e) {
-      error_log("LaunchDarkly caught $e");
-      $this->socket_failed = true;
-      return false;
-    }
   }
 
   private function createBody($content) {
@@ -114,35 +85,9 @@ class EventProcessor {
     return $req;
   }
 
-  private function makeRequest($socket, $req, $retry = true) {
-    $bytes_written = 0;
-    $bytes_total = strlen($req);
-    $closed = false;
+  private function makeRequest($payload) {
 
-    while (!$closed && $bytes_written < $bytes_total) {
-      try {
-        $written = @fwrite($socket, substr($req, $bytes_written));
-      } catch (Exception $e) {
-        error_log("LaunchDarkly caught $e");
-        $closed = true;
-      }
-      if (!isset($written) || !$written) {
-        $closed = true;
-      } else {
-        $bytes_written += $written;
-      }
-    }
-
-    if ($closed) {
-      fclose($socket);
-      if ($retry) {
-        error_log("LaunchDarkly retrying send");
-        $socket = $this->createSocket();
-        if ($socket) return $this->makeRequest($socket, $req, false);
-      }
-      return false;
-    }
-
+    $this->_httpClient->post("/api/events/bulk", ['body' => $payload, 'future' => true])
     return true;
   }
 
