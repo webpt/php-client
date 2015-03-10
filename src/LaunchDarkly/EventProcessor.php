@@ -68,26 +68,12 @@ class EventProcessor {
 
     $payload = json_encode($this->_queue);
 
-    return $this->makeRequest($socket, $body);
-  }
-
-  private function createBody($content) {
-    $req = "";
-    $req.= "POST /api/events/bulk HTTP/1.1\r\n";
-    $req.= "Host: " . $this->_host . "\r\n";
-    $req.= "Content-Type: application/json\r\n";
-    $req.= "Authorization: api_key " . $this->_apiKey . "\r\n";
-    $req.= "User-Agent: PHPClient/" . LDClient::VERSION . "\r\n";
-    $req.= "Accept: application/json\r\n";
-    $req.= "Content-length: " . strlen($content) . "\r\n";
-    $req.= "\r\n";
-    $req.= $content;
-    return $req;
+    return $this->makeRequest($payload);
   }
 
   private function makeRequest($payload) {
 
-    $this->_httpClient->post("/api/events/bulk", ['body' => $payload, 'future' => true])
+    $this->_httpClient->post("/api/events/bulk", ['body' => $payload, 'future' => true]);
     return true;
   }
 
