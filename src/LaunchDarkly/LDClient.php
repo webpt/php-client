@@ -169,18 +169,9 @@ class LDClient {
 
     protected function _toggle($key, $user, $default) {
         try {
-            $start = microtime(true);
             $response = $this->_client->get("/api/eval/features/$key");
-            $fetched = microtime(true);
             $json = $response->json();
-            $parsed = microtime(true);
             $ret = self::_decode($json, $user);
-            $evaled = microtime(true);
-            $total_time = $evaled - $start;
-            $eval_time = $evaled - $parsed;
-            $parse_time = $parsed - $fetched;
-            $fetch_time = $fetched - $start;
-            error_log("_toggle took total: $total_time (fetch: $fetch_time, parse: $parse_time, eval: $eval_time)");
             return $ret;
         } catch (BadResponseException $e) {
             $code = $e->getResponse()->getStatusCode();

@@ -46,7 +46,6 @@ class EventProcessor {
 
   public function __destruct() {
     $this->flush();
-    error_log("forcing " . count($this->_pending) . " futures");
     foreach ($this->_pending as $req) {
       $req->wait();
     }
@@ -75,6 +74,7 @@ class EventProcessor {
     }
 
     $payload = json_encode($this->_queue);
+    $this->_queue = array();
 
     return $this->makeRequest($payload);
   }
