@@ -48,7 +48,7 @@ class EventProcessor {
   }
 
   public function sendEvent($event) {
-    return $this->enqueue($event);
+    return $this->enqueue($event) && $this->flush();
   }
 
   public function enqueue($event) {
