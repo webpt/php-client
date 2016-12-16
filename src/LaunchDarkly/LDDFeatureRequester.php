@@ -28,11 +28,9 @@ class LDDFeatureRequester implements FeatureRequester {
     }
 
     protected function get_connection() {
-        /** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
-        return new \Predis\Client(array(
-                                      "scheme" => "tcp",
-                                      "host" => $this->_options['redis_host'],
-                                      "port" => $this->_options['redis_port']));
+        $options = new LDDFeatureRequesterOptions($this->_options);
+        $factory = $options->getRedisClientFactory();
+        return $factory->createClient($options);
     }
 
 

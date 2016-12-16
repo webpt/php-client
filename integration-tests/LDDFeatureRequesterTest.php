@@ -22,6 +22,29 @@ class LDDFeatureRetrieverTest extends \PHPUnit_Framework_TestCase {
         $redis->hset("launchdarkly:features", 'foo', $this->gen_feature("foo", "bar"));
         $this->assertEquals("bar", $client->toggle('foo', $user, 'jim'));
     }
+    
+    public function testGetViaSentinel() {
+        $parameters = ['tcp://localhost'];
+        $options   = ['replication' => 'sentinel', 'service' => 'mymaster'];
+
+        $redis = new \Predis\Client($parameters, $options);
+        
+        $client = new LDClient(
+            'BOGUS_API_KEY',
+            array(
+                'feature_requester_class' => '\\LaunchDarkly\\LDDFeatureRequester',
+                'redis_sentinels' => $parameters,
+                'redis_options' => $options,
+            )
+        );
+        $builder = new LDUserBuilder(3);
+        $user = $builder->build();
+
+        $redis->del("launchdarkly:features");
+        $this->assertEquals("jim", $client->toggle('foo', $user, 'jim'));
+        $redis->hset("launchdarkly:features", 'foo', $this->gen_feature("foo", "bar"));
+        $this->assertEquals("bar", $client->toggle('foo', $user, 'jim'));
+    }
 
     public function testGetApc() {
         $redis = new \Predis\Client(array(
